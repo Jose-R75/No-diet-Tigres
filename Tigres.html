@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad Interactiva: No diet - Los Tigres del Norte</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #005a9c;
+            --secondary-color: #d9534f;
+            --background-color: #f4f4f9;
+            --text-color: #333;
+            --light-gray: #e9ecef;
+            --border-radius: 8px;
+            --drop-zone-bg: #fffbe0;
+            --correct-bg: #d4edda;
+            --correct-border: #28a745;
+            --incorrect-bg: #f8d7da;
+            --incorrect-border: #dc3545;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 10px;
+        }
+
+        h1 { font-size: 2.5em; text-align: center; margin-bottom: 5px; }
+        h2.subtitle { font-size: 1.5em; text-align: center; border-bottom: none; margin-top: 0; color: #666; }
+        h3 { font-size: 1.2em; color: var(--secondary-color); margin-top: 25px; border: none; }
+        h4 { margin-bottom: 10px; margin-top: 20px; color: var(--primary-color); }
+
+        section { margin-bottom: 30px; }
+
+        /* --- Drag and Drop Styles --- */
+        .bank-container {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 50px;
+        }
+        .word-bank {
+            background-color: var(--light-gray);
+            border: 2px dashed var(--primary-color);
+        }
+        .emoji-bank {
+            background-color: #fdebd0;
+            border: 2px dashed #f39c12;
+        }
+
+        .draggable-word, .draggable-emoji {
+            cursor: grab;
+            transition: background-color 0.2s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .draggable-word {
+            background-color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .draggable-emoji {
+            font-size: 1.8em;
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .dragging { opacity: 0.5; cursor: grabbing; }
+
+        .drop-zone {
+            display: inline-block;
+            border-bottom: 2px dotted var(--secondary-color);
+            height: 40px;
+            text-align: center;
+            vertical-align: bottom;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s, border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .word-drop-zone {
+            background-color: var(--drop-zone-bg);
+            min-width: 150px;
+        }
+        .emoji-drop-zone {
+            background-color: #fef9e7;
+            width: 45px;
+            min-width: 45px;
+            height: 45px;
+            margin-right: 5px;
+            border-radius: 8px;
+        }
+        
+        .drop-zone .draggable-word {
+            box-shadow: none;
+            background-color: transparent;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        .drop-zone .draggable-emoji {
+            box-shadow: none;
+            background-color: transparent;
+        }
+
+        .drag-over { background-color: #cce5ff !important; }
+
+        /* --- Feedback Styles --- */
+        .correct { background-color: var(--correct-bg) !important; border: 2px solid var(--correct-border) !important; }
+        .incorrect { background-color: var(--incorrect-bg) !important; border: 2px solid var(--incorrect-border) !important; }
+        .correct .draggable-word { color: var(--correct-border); }
+        .incorrect .draggable-word { color: var(--incorrect-border); }
+
+        /* --- Other Styles --- */
+        .lyrics-text p { margin-bottom: 1em; }
+        .chorus { font-weight: bold; margin-top: 1em; padding-left: 15px; border-left: 3px solid #ccc; }
+        
+        /* --- Confirmation Section --- */
+        #confirmation-section { text-align: center; padding: 20px; background-color: var(--light-gray); border-radius: var(--border-radius); }
+        .btn { background-color: var(--primary-color); color: white; border: none; padding: 12px 25px; font-size: 1.1em; font-weight: bold; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s, transform 0.2s; }
+        .btn:hover { background-color: #00457c; transform: translateY(-2px); }
+        #reset-btn { background-color: var(--secondary-color); display: none; }
+        #reset-btn:hover { background-color: #b52b27; }
+        #results-container { margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 25px; }
+        
+        @media (max-width: 600px) {
+            .word-drop-zone { min-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <h1>No diet</h1>
+        <h2 class="subtitle">Los Tigres del Norte</h2>
+
+        <section id="lyrics-activity">
+            <h3>Letra</h3>
+            <p>Arrastra los emojis y las palabras a sus huecos correctos en la letra de la canción.</p>
+            
+            <h4>Banco de Emojis</h4>
+            <div class="bank-container emoji-bank" id="emoji-bank-container">
+                <div class="draggable-emoji" draggable="true" id="emoji-1">🚶‍♂️</div>
+                <div class="draggable-emoji" draggable="true" id="emoji-2">💪</div>
+                <div class="draggable-emoji" draggable="true" id="emoji-3">👨‍⚕️</div>
+                <div class="draggable-emoji" draggable="true" id="emoji-4">🚫</div>
+                <div class="draggable-emoji" draggable="true" id="emoji-5">🥗</div>
+                <div class="draggable-emoji" draggable="true" id="emoji-6">😩</div>
+            </div>
+
+            <h4>Banco de Palabras</h4>
+            <div class="bank-container word-bank" id="word-bank-container">
+                <div class="draggable-word" draggable="true" id="word-1">caminar</div>
+                <div class="draggable-word" draggable="true" id="word-2">debo</div>
+                <div class="draggable-word" draggable="true" id="word-3">doctor</div>
+                <div class="draggable-word" draggable="true" id="word-4">no puedes comer</div>
+                <div class="draggable-word" draggable="true" id="word-5">poner a dieta</div>
+                <div class="draggable-word" draggable="true" id="word-6">sacrificio</div>
+            </div>
+
+            <div class="lyrics-text">
+                <p><em>(¡Ay! Sigo enfermito. Debo de caminar, comer frutas y verduras)</em></p>
+                <p>“Te tienes que <span class="drop-zone emoji-drop-zone" data-answer="emoji-5"></span><span class="drop-zone word-drop-zone" data-answer="word-5"></span>.</p>
+                <p>Se están bloqueando tus arterias.</p>
+                <p><span class="drop-zone emoji-drop-zone" data-answer="emoji-4"></span><span class="drop-zone word-drop-zone" data-answer="word-4"></span> en la calle antojitos con manteca”</p>
+                <br>
+                <p>El <span class="drop-zone emoji-drop-zone" data-answer="emoji-3"></span><span class="drop-zone word-drop-zone" data-answer="word-3"></span> ya me dio la noticia<br>
+                que ando alto de colesterol...</p>
+                <p class="chorus">ESTRIBILLO<br>
+                Que <span class="drop-zone emoji-drop-zone" data-answer="emoji-2"></span><span class="drop-zone word-drop-zone" data-answer="word-2"></span> de comer zanahorias...<br>
+                Oh my God! ¡Qué <span class="drop-zone emoji-drop-zone" data-answer="emoji-6"></span><span class="drop-zone word-drop-zone" data-answer="word-6"></span>!<br>
+                Yo me quedo con mis tacos. ¡Qué rico!...</p>
+                <p><em>(Y como dice el doctor: <span class="drop-zone emoji-drop-zone" data-answer="emoji-1"></span><span class="drop-zone word-drop-zone" data-answer="word-1"></span>, comer frutas, verduras)</em></p>
+            </div>
+        </section>
+
+        <section id="confirmation-section">
+            <div id="results-container"></div>
+            <button id="check-answers-btn" class="btn">Confirmar respuestas</button>
+            <button id="reset-btn" class="btn">Reiniciar actividad</button>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const draggables = document.querySelectorAll('.draggable-word, .draggable-emoji');
+            const allDropZones = document.querySelectorAll('.word-drop-zone, .emoji-drop-zone, .word-bank, .emoji-bank');
+            const checkBtn = document.getElementById('check-answers-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const resultsContainer = document.getElementById('results-container');
+            const wordBank = document.getElementById('word-bank-container');
+            const emojiBank = document.getElementById('emoji-bank-container');
+
+            function initializeDragAndDrop() {
+                draggables.forEach(draggable => {
+                    draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
+                    draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
+                });
+
+                allDropZones.forEach(zone => {
+                    zone.addEventListener('dragover', e => {
+                        e.preventDefault();
+                        const dragged = document.querySelector('.dragging');
+                        if (!dragged) return;
+
+                        // Restrict drop based on type (word/emoji)
+                        const isWord = dragged.classList.contains('draggable-word');
+                        const isEmoji = dragged.classList.contains('draggable-emoji');
+                        const isWordZone = zone.classList.contains('word-drop-zone') || zone.classList.contains('word-bank');
+                        const isEmojiZone = zone.classList.contains('emoji-drop-zone') || zone.classList.contains('emoji-bank');
+
+                        if ((isWord && isWordZone) || (isEmoji && isEmojiZone)) {
+                            zone.classList.add('drag-over');
+                        }
+                    });
+                    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                    zone.addEventListener('drop', e => {
+                        e.preventDefault();
+                        zone.classList.remove('drag-over');
+                        const dragged = document.querySelector('.dragging');
+                        if (!dragged) return;
+
+                        // Check if the drop is valid (word in word-zone, emoji in emoji-zone)
+                        const isWord = dragged.classList.contains('draggable-word');
+                        const isEmoji = dragged.classList.contains('draggable-emoji');
+                        const isWordZone = zone.classList.contains('word-drop-zone') || zone.classList.contains('word-bank');
+                        const isEmojiZone = zone.classList.contains('emoji-drop-zone') || zone.classList.contains('emoji-bank');
+
+                        if (!((isWord && isWordZone) || (isEmoji && isEmojiZone))) {
+                            return; // Invalid drop, do nothing
+                        }
+
+                        // Swap items if dropping on a zone that already contains an item
+                        if (zone.children.length > 0 && !zone.classList.contains('bank-container')) {
+                            const existingItem = zone.firstElementChild;
+                            const sourceOfDragged = dragged.parentElement;
+                            sourceOfDragged.appendChild(existingItem);
+                        }
+                        zone.appendChild(dragged);
+                    });
+                });
+            }
+
+            function checkAnswers() {
+                const dropZones = document.querySelectorAll('.word-drop-zone, .emoji-drop-zone');
+                let correctCount = 0;
+                
+                dropZones.forEach(zone => {
+                    const expectedAnswerId = zone.dataset.answer;
+                    const droppedItem = zone.firstElementChild;
+                    zone.classList.remove('correct', 'incorrect');
+
+                    if (droppedItem && droppedItem.id === expectedAnswerId) {
+                        zone.classList.add('correct');
+                        correctCount++;
+                    } else {
+                        zone.classList.add('incorrect');
+                    }
+                });
+
+                resultsContainer.textContent = `¡Has acertado ${correctCount} de ${dropZones.length}!`;
+                checkBtn.style.display = 'none';
+                resetBtn.style.display = 'inline-block';
+            }
+
+            function resetActivity() {
+                // Clear feedback styles from all drop zones
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    zone.classList.remove('correct', 'incorrect');
+                });
+
+                // Move all words back to the word bank
+                document.querySelectorAll('.draggable-word').forEach(word => {
+                    wordBank.appendChild(word);
+                });
+
+                // Move all emojis back to the emoji bank
+                document.querySelectorAll('.draggable-emoji').forEach(emoji => {
+                    emojiBank.appendChild(emoji);
+                });
+
+                resultsContainer.textContent = '';
+                checkBtn.style.display = 'inline-block';
+                resetBtn.style.display = 'none';
+            }
+
+            checkBtn.addEventListener('click', checkAnswers);
+            resetBtn.addEventListener('click', resetActivity);
+            
+            initializeDragAndDrop();
+        });
+    </script>
+
+</body>
+</html>
